@@ -60,6 +60,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    // Radix UI ships a sourcemap that points to unavailable source files.
+    // Disable reporting through dependency sourcemaps during production builds.
+    sourcemap: false,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'SOURCEMAP_ERROR') {
+          return;
+        }
+        warn(warning);
+      },
+    },
   },
   server: {
     port,
