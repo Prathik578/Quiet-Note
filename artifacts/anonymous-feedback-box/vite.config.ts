@@ -1,9 +1,16 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
+
+const clerkEnv = loadEnv('development', path.resolve(import.meta.dirname), '');
+const clerkPublishableKey =
+  clerkEnv.VITE_CLERK_PUBLISHABLE_KEY ??
+  clerkEnv.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+  process.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const rawPort = process.env.PORT ?? '5173';
 const port = Number(rawPort);
@@ -16,6 +23,9 @@ const basePath = process.env.BASE_PATH ?? '/';
 
 export default defineConfig({
   base: basePath,
+  define: {
+    'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkPublishableKey ?? ''),
+  },
   plugins: [
     react(),
     tailwindcss({ optimize: false }),
@@ -53,7 +63,8 @@ export default defineConfig({
   },
   server: {
     port,
-    strictPort: true,
+    // Let Vite select the next available port when the requested one is occupied.
+    strictPort: false,
     host: '0.0.0.0',
     allowedHosts: true,
     fs: {
