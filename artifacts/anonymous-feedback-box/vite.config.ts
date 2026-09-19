@@ -53,7 +53,8 @@ export default defineConfig({
   },
   server: {
     port,
-    strictPort: true,
+    // Let Vite select the next available port when the requested one is occupied.
+    strictPort: false,
     host: '0.0.0.0',
     allowedHosts: true,
     fs: {
