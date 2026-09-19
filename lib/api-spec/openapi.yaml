@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authenticated owner session operations
+  - name: inbox
+    description: Private owner inbox operations
+  - name: public-feedback
+    description: Anonymous public feedback operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the authenticated owner
+      responses:
+        "200":
+          description: The authenticated owner and their public feedback link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /inbox:
+    get:
+      operationId: getInbox
+      tags: [inbox]
+      summary: Get the authenticated owner's feedback inbox
+      responses:
+        "200":
+          description: The owner's inbox and message count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inbox"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /inbox/messages/{feedbackId}:
+    delete:
+      operationId: deleteFeedback
+      tags: [inbox]
+      summary: Delete one feedback message owned by the authenticated user
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Feedback deleted
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Feedback not found or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /public/feedback/{publicToken}:
+    get:
+      operationId: getPublicFeedbackTarget
+      tags: [public-feedback]
+      summary: Validate a public feedback link without exposing feedback
+      parameters:
+        - name: publicToken
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 20
+      responses:
+        "200":
+          description: The public feedback link is valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicFeedbackTarget"
+        "404":
+          description: Public feedback link not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createPublicFeedback
+      tags: [public-feedback]
+      summary: Submit anonymous feedback through a public link
+      parameters:
+        - name: publicToken
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 20
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "201":
+          description: Anonymous feedback created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackCreated"
+        "400":
+          description: Invalid feedback message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Public feedback link not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - message
+        - createdAt
+    CurrentUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        publicToken:
+          type: string
+        publicUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - publicToken
+        - publicUrl
+        - createdAt
+    Inbox:
+      type: object
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        publicToken:
+          type: string
+        publicUrl:
+          type: string
+          format: uri
+        feedback:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feedback"
+      required:
+        - total
+        - publicToken
+        - publicUrl
+        - feedback
+    PublicFeedbackTarget:
+      type: object
+      properties:
+        valid:
+          type: boolean
+      required:
+        - valid
+    FeedbackInput:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+      required:
+        - message
+    FeedbackCreated:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+      required:
+        - accepted
+

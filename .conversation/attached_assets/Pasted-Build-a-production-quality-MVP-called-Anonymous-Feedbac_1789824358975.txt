@@ -1,0 +1,146 @@
+Build a production-quality MVP called **Anonymous Feedback Box**.
+
+## PRODUCT
+
+Create a web application where a person can generate a private feedback inbox link. Anyone with that link can submit anonymous text feedback without creating an account. The inbox owner can authenticate and privately read and delete their received feedback.
+
+The application has two distinct surfaces:
+
+1. Public feedback form — create feedback only.
+2. Private owner dashboard — read and delete feedback.
+
+## CORE USER FLOWS
+
+### Owner
+
+1. Create an account / sign in.
+2. Enter a private dashboard.
+3. See their unique public feedback URL.
+4. Copy/share that URL.
+5. View submitted feedback.
+6. Delete individual feedback messages.
+7. Log out.
+
+### Anonymous visitor
+
+1. Open the owner's public feedback URL.
+2. See a simple feedback form.
+3. Enter a message.
+4. Submit it without entering their name or email.
+5. See a clear success confirmation.
+
+## DATA MODEL
+
+Create these entities:
+
+### User
+
+* id
+* email
+* created_at
+
+### Feedback
+
+* id
+* owner_id
+* message
+* created_at
+
+Each Feedback record belongs to exactly one User through owner_id.
+
+## SECURITY REQUIREMENTS
+
+These are mandatory:
+
+* Anonymous visitors may create feedback for a valid public feedback link.
+* Anonymous visitors must NOT be able to read feedback.
+* Anonymous visitors must NOT be able to delete feedback.
+* Unauthenticated users must NOT access the private dashboard.
+* An authenticated user may read only their own feedback.
+* An authenticated user may delete only their own feedback.
+* Enforce authorization at the backend/database layer, not only by hiding frontend controls.
+* Never expose another user's feedback through predictable IDs or URL manipulation.
+* Do not collect the submitter's name or email.
+* Do not log the feedback message unnecessarily in client-side analytics or console output.
+
+## PUBLIC UI
+
+Create a clean, minimal responsive page containing:
+
+* Application title
+* Short explanation that messages are anonymous
+* Large multiline feedback input
+* Submit button
+* Character limit
+* Validation for empty messages
+* Loading state while submitting
+* Error state if submission fails
+* Success confirmation after submission
+
+Do not require account creation on the public feedback page.
+
+## PRIVATE DASHBOARD
+
+Create a responsive dashboard containing:
+
+* Inbox title
+* Total message count
+* Public feedback link
+* Copy-link button
+* List of received messages
+* Timestamp for each message
+* Delete button for each message
+* Confirmation before deletion
+* Empty inbox state
+* Loading state
+* Error state
+* Logout control
+
+## UX REQUIREMENTS
+
+Keep the interface simple and focused.
+
+The main action on the public page should be immediately obvious.
+
+Use responsive design for desktop and mobile.
+
+Provide clear feedback for:
+
+* successful submission
+* failed submission
+* deleted message
+* copied link
+* empty inbox
+
+Do not add unnecessary features.
+
+## VALIDATION
+
+A feedback message:
+
+* must not be empty
+* should have a reasonable maximum length
+* should be trimmed before storage
+
+Handle malformed or invalid public feedback links gracefully.
+
+## TESTING REQUIREMENTS
+
+Before declaring the application complete, test:
+
+1. A visitor can submit anonymous feedback.
+2. The feedback appears in the correct owner's inbox.
+3. A visitor cannot read the inbox.
+4. A visitor cannot delete feedback.
+5. An unauthenticated user cannot access the dashboard.
+6. User A cannot access User B's feedback.
+7. The owner can delete their own feedback.
+8. The message count updates after deletion.
+9. Empty messages are rejected.
+10. The application works on mobile and desktop.
+11. Refreshing the dashboard preserves authentication.
+12. The public link continues working after refreshing the page.
+
+After implementation, report any failed tests and fix them before considering the MVP complete.
+
+Do not add features outside this specification unless they are required for security, reliability, or basic usability.

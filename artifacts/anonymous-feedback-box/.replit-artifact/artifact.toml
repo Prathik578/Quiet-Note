@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Anonymous Feedback Box"
+description = "A privacy-first feedback inbox where owners share a private link, anyone can leave anonymous text feedback, and only the authenticated owner can read or delete messages."
+version = "1.0.0"
+id = "artifacts/anonymous-feedback-box"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24777
+
+[services.development]
+run = "pnpm --filter @workspace/anonymous-feedback-box run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/anonymous-feedback-box", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/anonymous-feedback-box/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24777"
+BASE_PATH = "/"
